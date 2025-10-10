@@ -5,7 +5,7 @@ function Tile({ style = {}, onClick }) {
   const defaultStyle = {
     width: 100,
     height: 120,
-    backgroundColor: "blue",
+    backgroundImage: "url(../public/mateo.jpg)",
     borderRadius: 5,
   };
   return <div style={{ ...defaultStyle, ...style }} onClick={onClick} />;
