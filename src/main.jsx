@@ -1,17 +1,21 @@
 import React, { useState, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 
-function Tile({ style = {}, onClick }) {
+const tilesImages = ["mateo.jpg", "chimpansini.jpg", "trippitropi.jpg", "tungtungsahur.jpg"];
+
+function Tile({ image, style = {} }) {
   const defaultStyle = {
-    width: 100,
+    width: 100, 
     height: 120,
-    backgroundImage: "url(../public/mateo.jpg)",
+    backgroundImage: "url(/assets/images/"+image+")",
+    backgroundSize: "cover",
     borderRadius: 5,
   };
+
   return <div style={{ ...defaultStyle, ...style }} onClick={onClick} />;
 }
 
-function Button({ style = {}, onClick, text }) {
+function Button({ text, onClick, style = {} }) {
   const defaultStyle = {
     width: 120,
     height: 50,
@@ -69,14 +73,15 @@ function Header() {
     color: "white",
     margin: 20,
   };
-
-  const { cols, rows } = useMemo(() => {
+  
+  function mostSquareDimenstions(cards) {
     let best = 1;
     for (let i = 1; i * i <= cards; i++) {
       if (cards % i === 0) best = i;
     }
     return { cols: best, rows: cards / best };
-  }, [cards]);
+  }
+  const {cols,rows} = useMemo(() => mostSquareDimenstions(cards), [cards]);
 
   if (!play) {
     return (
@@ -92,6 +97,11 @@ function Header() {
     );
   }
 
+  //mapa - imageName : int 
+  function getRandomImage() {
+
+  }
+
   return (
     <>
       <Button text="Exit" style={exitStyle} onClick={() => setPlay(false)} />
@@ -105,8 +115,8 @@ function Header() {
           margin: "0 auto",
         }}
       >
-        {Array.from({ length: cards }).map((_, i) => (
-          <Tile key={i} />
+        {Array.from({length: cards}).map((_, i) => (
+          <Tile image={tilesImages[0]}/>
         ))}
       </div>
     </>
