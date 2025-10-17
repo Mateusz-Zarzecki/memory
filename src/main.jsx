@@ -7,12 +7,13 @@ function Tile({ image, style = {} }) {
   const defaultStyle = {
     width: 100, 
     height: 120,
+    backgroundColor: "white",
     backgroundImage: "url(/assets/images/"+image+")",
     backgroundSize: "cover",
     borderRadius: 5,
   };
 
-  return <div style={{ ...defaultStyle, ...style }} onClick={onClick} />;
+  return <div style={{ ...defaultStyle, ...style }} />;
 }
 
 function Button({ text, onClick, style = {} }) {
@@ -74,6 +75,8 @@ function Header() {
     margin: 20,
   };
   
+  const randomTilesImages = tilesImages;
+
   function mostSquareDimenstions(cards) {
     let best = 1;
     for (let i = 1; i * i <= cards; i++) {
@@ -97,7 +100,6 @@ function Header() {
     );
   }
 
-  //mapa - imageName : int 
   function getRandomImage() {
 
   }
@@ -116,7 +118,7 @@ function Header() {
         }}
       >
         {Array.from({length: cards}).map((_, i) => (
-          <Tile image={tilesImages[0]}/>
+          <Tile key={i} image={tilesImages[0]}/>
         ))}
       </div>
     </>
