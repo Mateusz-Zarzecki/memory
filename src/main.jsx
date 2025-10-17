@@ -36,10 +36,10 @@ function Button({ text, onClick, style = {} }) {
 }
 
 function Header() {
-  const [cards, setCards] = useState(10);
+  const [cards, setCards] = useState(8);
   const [play, setPlay] = useState(false);
 
-  const increase = () => setCards((v) => Math.min(20, v + 2));
+  const increase = () => setCards((v) => Math.min(8, v + 2));
   const decrease = () => setCards((v) => Math.max(4, v - 2));
 
   const headerStyle = {
@@ -74,8 +74,38 @@ function Header() {
     color: "white",
     margin: 20,
   };
-  
-  const randomTilesImages = tilesImages;
+
+  const [randomTilesImages, setRandomTilesImages] = useState([]);
+
+  function getRandomInt(max) {
+    return Math.floor(Math.random() * max);
+  }
+
+  function getRandomImage(imagesAvailable) {
+    setRandomTilesImages(imagesAvailable.map(image=>[2,image]));
+    let random = getRandomInt(randomTilesImages.length);
+    while(true) {
+      if(randomTilesImages[random][0] > 0) {
+        randomTilesImages[random][0]--;
+        return randomTilesImages[random][1];
+      }
+      random = (random+1 === randomTilesImages.length) ? 0 : random+1;
+    }
+  }
+
+  function getRandomImagesAvailable(images) {
+    let imagesUsed = images.map(x => [false,x]);
+    let imagesCount = cards/2;
+    while(imagesCount) {
+      let random = getRandomInt(imagesUsed.length);
+      if(!imagesUsed[random]) {
+        imagesUsed[random] = true;
+        break;
+      }
+      random = (random+1 === imagesUsed.length) ? 0 : random+1;
+    }
+    return imagesUsed.find(image => image[0]);
+  }
 
   function mostSquareDimenstions(cards) {
     let best = 1;
@@ -85,6 +115,8 @@ function Header() {
     return { cols: best, rows: cards / best };
   }
   const {cols,rows} = useMemo(() => mostSquareDimenstions(cards), [cards]);
+
+  console.log(getRandomImagesAvailable(tilesImages));
 
   if (!play) {
     return (
@@ -99,34 +131,30 @@ function Header() {
       </div>
     );
   }
-
-  function getRandomImage() {
-
-  }
-
-  return (
-    <>
-      <Button text="Exit" style={exitStyle} onClick={() => setPlay(false)} />
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${cols}, 1fr)`,
-          gap: 12,
-          padding: 20,
-          maxWidth: 900,
-          margin: "0 auto",
-        }}
-      >
-        {Array.from({length: cards}).map((_, i) => (
-          <Tile key={i} image={tilesImages[0]}/>
-        ))}
-      </div>
-    </>
-  );
+  //getRandomImage(getRandomImagesAvailable(tilesImages))
+  // return (
+  //   <>
+  //     <Button text="Exit" style={exitStyle} onClick={() => setPlay(false)} />
+  //     <div
+  //       style={{
+  //         display: "grid",
+  //         gridTemplateColumns: `repeat(${cols}, 1fr)`,
+  //         gap: 12,
+  //         padding: 20,
+  //         maxWidth: 900,
+  //         margin: "0 auto",
+  //       }}
+  //     >
+  //       {Array.from({length: cards}).map((_, i) => (
+  //         <Tile key={i} image={tilesImages[0]}/>
+  //       ))}
+  //     </div>
+  //   </>
+  // );
 }
 
 createRoot(document.getElementById("root")).render(
   <>
-    <Header />
+    <Header/>
   </>
 );
