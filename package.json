@@ -5,6 +5,10 @@
   "type": "module",
   "homepage": "https://Mateusz-Zarzecki.github.io/memory",
   "scripts": {
+     "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
     "predeploy": "vite build",
     "deploy": "gh-pages -d dist"
   },
