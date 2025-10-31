@@ -19,9 +19,9 @@ function Tile({ image, style = {}, onClick, id, isImageVisible, isMatched }) {
     cursor: isMatched ? "not-allowed" : "pointer",
     display: "flex",
     justifyContent: "center",
-    alignItems: "center", // Centering the tile content
+    alignItems: "center",
     fontSize: 16,
-    color: "white", // For visible tile text (optional)
+    color: "white"
   };
 
   return <div style={{ ...defaultStyle, ...style }} onClick={() => !isMatched && onClick(id)} />;
@@ -50,10 +50,10 @@ function Header() {
   const [cards, setCards] = useState(8);
   const [play, setPlay] = useState(false);
   const [randomImages, setRandomImages] = useState([]);
-  const [clickedTiles, setClickedTiles] = useState([]); // Store clicked tile indices
-  const [isWaiting, setIsWaiting] = useState(false); // To prevent further clicks during waiting
-  const [matchedTiles, setMatchedTiles] = useState([]); // Store matched tiles (red)
-  const [gameOver, setGameOver] = useState(false); // To track if game is over
+  const [clickedTiles, setClickedTiles] = useState([]); 
+  const [isWaiting, setIsWaiting] = useState(false); 
+  const [matchedTiles, setMatchedTiles] = useState([]); 
+  const [gameOver, setGameOver] = useState(false); 
 
   const increase = () => setCards((v) => Math.min(8, v + 2));
   const decrease = () => setCards((v) => Math.max(4, v - 2));
@@ -125,31 +125,26 @@ function Header() {
     }
   }, [play, cards]);
 
-  // Handle tile clicks
   const handleTileClick = (index) => {
-    if (isWaiting || clickedTiles.length >= 2 || matchedTiles.includes(index)) return; // Prevent clicks while waiting or if already matched
+    if (isWaiting || clickedTiles.length >= 2 || matchedTiles.includes(index)) return; 
     setClickedTiles((prev) => [...prev, index]);
 
-    // If two tiles are clicked, check if they match
     if (clickedTiles.length === 1) {
       const firstTileIndex = clickedTiles[0];
       const secondTileIndex = index;
       
       if (randomImages[firstTileIndex] === randomImages[secondTileIndex]) {
-        // Mark as matched
         setMatchedTiles((prev) => [...prev, firstTileIndex, secondTileIndex]);
       }
 
       setIsWaiting(true);
       setTimeout(() => {
-        // Reset clicked tiles and continue
         setIsWaiting(false);
         setClickedTiles([]);
       }, 3000);
     }
   };
 
-  // Check if the game is over
   useEffect(() => {
     if (matchedTiles.length === cards) {
       setGameOver(true);
