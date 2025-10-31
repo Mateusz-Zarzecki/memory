@@ -1,19 +1,30 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 
-const tilesImages = ["mateo.jpg", "chimpansini.jpg", "trippitropi.jpg", "tungtungsahur.jpg"];
+const tilesImages = [
+  "mateo.jpg", 
+  "chimpansini.jpg", 
+  "trippitropi.jpg", 
+  "tungtungsahur.jpg"
+];
 
-function Tile({ image, style = {} }) {
+function Tile({ image, style = {}, onClick, id, isImageVisible, isMatched }) {
   const defaultStyle = {
-    width: 100, 
+    width: 100,
     height: 120,
-    backgroundColor: "white",
-    backgroundImage: "url(/assets/images/"+image+")",
+    backgroundColor: isMatched ? "red" : (isImageVisible ? "transparent" : "black"),
+    backgroundImage: isImageVisible ? `url(/assets/images/${image})` : "none",
     backgroundSize: "cover",
     borderRadius: 5,
+    cursor: isMatched ? "not-allowed" : "pointer",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center", // Centering the tile content
+    fontSize: 16,
+    color: "white", // For visible tile text (optional)
   };
 
-  return <div style={{ ...defaultStyle, ...style }} />;
+  return <div style={{ ...defaultStyle, ...style }} onClick={() => !isMatched && onClick(id)} />;
 }
 
 function Button({ text, onClick, style = {} }) {
@@ -38,6 +49,11 @@ function Button({ text, onClick, style = {} }) {
 function Header() {
   const [cards, setCards] = useState(8);
   const [play, setPlay] = useState(false);
+  const [randomImages, setRandomImages] = useState([]);
+  const [clickedTiles, setClickedTiles] = useState([]); // Store clicked tile indices
+  const [isWaiting, setIsWaiting] = useState(false); // To prevent further clicks during waiting
+  const [matchedTiles, setMatchedTiles] = useState([]); // Store matched tiles (red)
+  const [gameOver, setGameOver] = useState(false); // To track if game is over
 
   const increase = () => setCards((v) => Math.min(8, v + 2));
   const decrease = () => setCards((v) => Math.max(4, v - 2));
@@ -75,48 +91,70 @@ function Header() {
     margin: 20,
   };
 
-  const [randomTilesImages, setRandomTilesImages] = useState([]);
-
   function getRandomInt(max) {
     return Math.floor(Math.random() * max);
   }
 
-  function getRandomImage(imagesAvailable) {
-    setRandomTilesImages(imagesAvailable.map(image=>[2,image]));
-    let random = getRandomInt(randomTilesImages.length);
-    while(true) {
-      if(randomTilesImages[random][0] > 0) {
-        randomTilesImages[random][0]--;
-        return randomTilesImages[random][1];
+  function generateRandomImages(images, totalCards) {
+    let availableImages = [];
+    let selectedImages = [];
+    let imagesCount = totalCards / 2;
+
+    while (selectedImages.length < imagesCount) {
+      let randomImage = images[getRandomInt(images.length)];
+      if (!selectedImages.includes(randomImage)) {
+        selectedImages.push(randomImage);
+        availableImages.push(randomImage, randomImage);
       }
-      random = (random+1 === randomTilesImages.length) ? 0 : random+1;
     }
+    availableImages = availableImages.sort(() => Math.random() - 0.5);
+    setRandomImages(availableImages);
   }
 
-  function getRandomImagesAvailable(images) {
-    let imagesUsed = images.map(x => [false,x]);
-    let imagesCount = cards/2;
-    while(imagesCount) {
-      let random = getRandomInt(imagesUsed.length);
-      if(!imagesUsed[random]) {
-        imagesUsed[random] = true;
-        break;
-      }
-      random = (random+1 === imagesUsed.length) ? 0 : random+1;
-    }
-    return imagesUsed.find(image => image[0]);
-  }
-
-  function mostSquareDimenstions(cards) {
+  const { cols, rows } = useMemo(() => {
     let best = 1;
     for (let i = 1; i * i <= cards; i++) {
       if (cards % i === 0) best = i;
     }
     return { cols: best, rows: cards / best };
-  }
-  const {cols,rows} = useMemo(() => mostSquareDimenstions(cards), [cards]);
+  }, [cards]);
 
-  console.log(getRandomImagesAvailable(tilesImages));
+  useEffect(() => {
+    if (play) {
+      generateRandomImages(tilesImages, cards);
+    }
+  }, [play, cards]);
+
+  // Handle tile clicks
+  const handleTileClick = (index) => {
+    if (isWaiting || clickedTiles.length >= 2 || matchedTiles.includes(index)) return; // Prevent clicks while waiting or if already matched
+    setClickedTiles((prev) => [...prev, index]);
+
+    // If two tiles are clicked, check if they match
+    if (clickedTiles.length === 1) {
+      const firstTileIndex = clickedTiles[0];
+      const secondTileIndex = index;
+      
+      if (randomImages[firstTileIndex] === randomImages[secondTileIndex]) {
+        // Mark as matched
+        setMatchedTiles((prev) => [...prev, firstTileIndex, secondTileIndex]);
+      }
+
+      setIsWaiting(true);
+      setTimeout(() => {
+        // Reset clicked tiles and continue
+        setIsWaiting(false);
+        setClickedTiles([]);
+      }, 3000);
+    }
+  };
+
+  // Check if the game is over
+  useEffect(() => {
+    if (matchedTiles.length === cards) {
+      setGameOver(true);
+    }
+  }, [matchedTiles, cards]);
 
   if (!play) {
     return (
@@ -131,30 +169,49 @@ function Header() {
       </div>
     );
   }
-  //getRandomImage(getRandomImagesAvailable(tilesImages))
-  // return (
-  //   <>
-  //     <Button text="Exit" style={exitStyle} onClick={() => setPlay(false)} />
-  //     <div
-  //       style={{
-  //         display: "grid",
-  //         gridTemplateColumns: `repeat(${cols}, 1fr)`,
-  //         gap: 12,
-  //         padding: 20,
-  //         maxWidth: 900,
-  //         margin: "0 auto",
-  //       }}
-  //     >
-  //       {Array.from({length: cards}).map((_, i) => (
-  //         <Tile key={i} image={tilesImages[0]}/>
-  //       ))}
-  //     </div>
-  //   </>
-  // );
+
+  return (
+    <>
+      <Button text="Exit" style={exitStyle} onClick={() => setPlay(false)} />
+      {gameOver && (
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            fontSize: "36px",
+            color: "green",
+            fontWeight: "bold",
+            textAlign: "center",
+          }}
+        >
+          Gratulacje! Gra zakończona!
+        </div>
+      )}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${cols}, 1fr)`,
+          gap: 12,
+          padding: 20,
+          maxWidth: 900,
+          margin: "0 auto",
+        }}
+      >
+        {randomImages.map((image, i) => (
+          <Tile
+            key={i}
+            image={image}
+            onClick={handleTileClick}
+            id={i}
+            isImageVisible={clickedTiles.includes(i)}
+            isMatched={matchedTiles.includes(i)}
+          />
+        ))}
+      </div>
+    </>
+  );
 }
 
-createRoot(document.getElementById("root")).render(
-  <>
-    <Header/>
-  </>
-);
+createRoot(document.getElementById("root")).render(<Header />);
