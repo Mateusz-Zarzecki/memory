@@ -1,32 +1,38 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 
+import mateo from "./assets/images/mateo.jpg";
+import chimpansini from "./assets/images/chimpansini.jpg";
+import trippitropi from "./assets/images/trippitropi.jpg";
+import tungtungsahur from "./assets/images/tungtungsahur.jpg";
+
 const tilesImages = [
-  "mateo.jpg", 
-  "chimpansini.jpg", 
-  "trippitropi.jpg", 
-  "tungtungsahur.jpg"
+  mateo, 
+  chimpansini, 
+  trippitropi, 
+  tungtungsahur
 ];
 
 function Tile({ image, style = {}, onClick, id, isImageVisible, isMatched }) {
-  const defaultStyle = {
-    width: 100,
-    height: 120,
-    backgroundColor: isMatched ? "red" : (isImageVisible ? "transparent" : "black"),
-    backgroundImage: isImageVisible ? `url(/assets/images/${image})` : "none",
-    backgroundSize: "cover",
-    borderRadius: 5,
-    cursor: isMatched ? "not-allowed" : "pointer",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: 16,
-    color: "white"
-  };
+const defaultStyle = {
+  width: 100,
+  height: 120,
+  backgroundColor: isMatched ? "red" : isImageVisible ? "transparent" : "black",
+  backgroundImage: isImageVisible ? `url(${image})` : "none",
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  borderRadius: 5,
+  cursor: isMatched ? "not-allowed" : "pointer",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  fontSize: 16,
+  color: "white",
+};
 
-  return <div style={{ ...defaultStyle, ...style }} onClick={() => !isMatched && onClick(id)} />;
+
+return <div style={{ ...defaultStyle, ...style }} onClick={() => !isMatched && onClick(id)} />;
 }
-
 function Button({ text, onClick, style = {} }) {
   const defaultStyle = {
     width: 120,
@@ -141,7 +147,7 @@ function Header() {
       setTimeout(() => {
         setIsWaiting(false);
         setClickedTiles([]);
-      }, 3000);
+      }, 1000);
     }
   };
 
@@ -209,4 +215,4 @@ function Header() {
   );
 }
 
-createRoot(document.getElementById("root")).render(<Header/>);
+createRoot(document.getElementById("root")).render(<Header />);
